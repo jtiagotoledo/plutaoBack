@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 
 const tarefaSchema = new mongoose.Schema({
-    semana: {
-        type: Number,
-        required: true,
-    },
     titulo: {
         type: String,
         required: true,
+    },
+    classe: {
+        type: String,
+        required: true,
+        index: true
     }
 }, { timestamps: true });
 

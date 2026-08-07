@@ -15,7 +15,9 @@ exports.obterPainelEstudante = async (req, res) => {
       return res.status(404).json({ erro: 'Código (hash) não encontrado.' });
     }
 
-    const tarefas = await Tarefa.find().sort({ semana: 1 });
+    const tarefas = await Tarefa.find({ 
+      classe: { $in: [estudante.classe, 'TODAS'] } 
+    }).sort({ createdAt: 1 }); 
 
     const entregas = await Entrega.find({ estudanteId: estudante._id });
 
@@ -23,8 +25,9 @@ exports.obterPainelEstudante = async (req, res) => {
       const entrega = entregas.find(e => e.tarefaId.toString() === tarefa._id.toString());
       return {
         tarefaId: tarefa._id,
-        semana: tarefa.semana,
         titulo: tarefa.titulo,
+        classe: tarefa.classe,
+        dataCriacao: tarefa.createdAt, 
         entregue: !!entrega,
         conteudo: entrega ? entrega.conteudo : null,
         dataEntrega: entrega ? entrega.updatedAt : null
