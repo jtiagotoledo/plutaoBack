@@ -2,12 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 
 const estudanteRoutes = require('./routes/estudanteRoutes');
 
 const app = express();
 const PORT = process.env.PORT||3005;
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cors());
 app.use(express.json());
 
