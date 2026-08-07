@@ -1,19 +1,19 @@
 const mongoose = require('mongoose');
 
-const entregaSchema = mongoose.Schema({
+const entregaSchema = new mongoose.Schema({
     estudanteId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Estudante',
-        require: true,
+        required: true,
     },
     tarefaId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Tarefa',
-        require: true,
+        required: true,
     },
     conteudo: {
         type: String,
-        require: true,
+        required: true,
     }
 }, { timestamps: true });
 

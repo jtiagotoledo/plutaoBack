@@ -1,23 +1,23 @@
 const mongoose = require('mongoose');
 
-const estudanteSchema = mongoose.Schema({
+const estudanteSchema = new mongoose.Schema({
     hash: {
         type: String,
-        require: true,
+        required: true,
         unique: true,
         index: true
     },
     nome: {
         type: String,
-        require: true,
+        required: true,
     },
     classe: {
         type: String,
-        require: true,
+        required: true,
     },
     numero: {
         type: Number,
-        require: true,
+        required: true,
     }
 }, { timestamps: true });
 

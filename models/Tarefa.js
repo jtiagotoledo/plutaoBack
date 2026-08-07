@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 
-const tarefaSchema = mongoose.Schema({
+const tarefaSchema = new mongoose.Schema({
     semana: {
         type: Number,
-        require: true,
+        required: true,
     },
     titulo: {
         type: String,
-        require: true,
+        required: true,
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Tarefa', tarefaSchemaSchema);
+module.exports = mongoose.model('Tarefa', tarefaSchema);

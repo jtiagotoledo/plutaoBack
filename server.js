@@ -3,11 +3,15 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
+const estudanteRoutes = require('./routes/estudanteRoutes');
+
 const app = express();
 const PORT = process.env.PORT||3005;
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/estudantes', estudanteRoutes);
 
 app.get('/api/health',(req,res)=>{
     res.json({status:'ok',message:`Servidor rodando perfeitamente na porta: ${PORT}` });
