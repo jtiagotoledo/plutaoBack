@@ -15,9 +15,9 @@ exports.obterPainelEstudante = async (req, res) => {
       return res.status(404).json({ erro: 'Código (hash) não encontrado.' });
     }
 
-    const tarefas = await Tarefa.find({ 
-      classe: { $in: [estudante.classe, 'TODAS'] } 
-    }).sort({ createdAt: 1 }); 
+    const tarefas = await Tarefa.find({
+      classe: { $in: [estudante.classe, 'TODAS'] }
+    }).sort({ createdAt: 1 });
 
     const entregas = await Entrega.find({ estudanteId: estudante._id });
 
@@ -27,7 +27,7 @@ exports.obterPainelEstudante = async (req, res) => {
         tarefaId: tarefa._id,
         titulo: tarefa.titulo,
         classe: tarefa.classe,
-        dataCriacao: tarefa.createdAt, 
+        dataCriacao: tarefa.createdAt,
         entregue: !!entrega,
         conteudo: entrega ? entrega.conteudo : null,
         dataEntrega: entrega ? entrega.updatedAt : null
@@ -79,3 +79,17 @@ exports.enviarTarefa = async (req, res) => {
     return res.status(500).json({ erro: 'Erro ao salvar a entrega.' });
   }
 };
+
+exports.uploadFoto = (req, res) => {
+  try {
+    const urlArquivo = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+
+    return res.json({
+      mensagem: 'Upload realizado com sucesso!',
+      url: urlArquivo
+    });
+  } catch (error) {
+    console.error('Erro ao processar URL da imagem:', error);
+    return res.status(500).json({ erro: 'Erro interno ao salvar foto.' })
+  }
+}
