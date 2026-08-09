@@ -31,22 +31,26 @@ exports.criarTarefa = async (req, res) => {
     const { titulo, classe, pdfUrl } = req.body;
 
     if (!titulo || !classe) {
-      return res.status(400).json({ erro: 'Título e classe são obrigatórios.' });
+      return res.status(400).json({ erro: 'Título e classe(s) são obrigatórios.' });
     }
 
-    const novaTarefa = await Tarefa.create({
+    const turmasArray = Array.isArray(classe) ? classe : [classe];
+
+    const tarefasParaInserir = turmasArray.map(turma => ({
       titulo,
-      classe: classe.trim().toUpperCase(),
+      classe: turma.trim().toUpperCase(),
       pdfUrl: pdfUrl || null
-    });
+    }));
+
+    const tarefasCriadas = await Tarefa.insertMany(tarefasParaInserir);
 
     return res.status(201).json({
-      mensagem: 'Tarefa cadastrada com sucesso!',
-      tarefa: novaTarefa
+      mensagem: `Tarefa cadastrada com sucesso para ${tarefasCriadas.length} turma(s)!`,
+      tarefas: tarefasCriadas
     });
 
   } catch (error) {
-    console.error('Erro ao criar tarefa:', error);
+    console.error('Erro ao criar tarefa(s):', error);
     return res.status(500).json({ erro: 'Erro ao cadastrar a tarefa.' });
   }
 };
