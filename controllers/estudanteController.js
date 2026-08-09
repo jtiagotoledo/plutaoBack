@@ -97,20 +97,25 @@ exports.uploadFoto = (req, res) => {
 
 exports.atualizarEntrega = async (req, res) => {
   try {
-    const { estudanteId, tarefaId, conteudo } = req.body;
+    const { hash, tarefaId, conteudo } = req.body;
 
-    if (!estudanteId || !tarefaId || !conteudo) {
-      return res.status(400).json({ erro: 'estudanteId, tarefaId e conteudo são obrigatórios.' });
+    if (!hash || !tarefaId || !conteudo) {
+      return res.status(400).json({ erro: 'Hash, tarefaId e conteúdo são obrigatórios.' });
+    }
+
+    const estudante = await Estudante.findOne({ hash: hash.trim().toUpperCase() });
+    if (!estudante) {
+      return res.status(404).json({ erro: 'Estudante não encontrado com este hash.' });
     }
 
     const entrega = await Entrega.findOneAndUpdate(
-      { estudanteId, tarefaId },
+      { estudanteId: estudante._id, tarefaId },
       { conteudo },
       { new: true } 
     );
 
     if (!entrega) {
-      return res.status(404).json({ erro: 'Nenhuma entrega encontrada para atualizar.' });
+      return res.status(404).json({ erro: 'Nenhuma entrega encontrada para este aluno nesta tarefa.' });
     }
 
     return res.json({
@@ -126,19 +131,24 @@ exports.atualizarEntrega = async (req, res) => {
 
 exports.excluirEntrega = async (req, res) => {
   try {
-    const { estudanteId, tarefaId } = req.body;
+    const { hash, tarefaId } = req.body;
 
-    if (!estudanteId || !tarefaId) {
-      return res.status(400).json({ erro: 'estudanteId e tarefaId são obrigatórios.' });
+    if (!hash || !tarefaId) {
+      return res.status(400).json({ erro: 'Hash e tarefaId são obrigatórios.' });
     }
 
-    const entregaDeletada = await Entrega.findOneAndDelete({ estudanteId, tarefaId });
+    const estudante = await Estudante.findOne({ hash: hash.trim().toUpperCase() });
+    if (!estudante) {
+      return res.status(404).json({ erro: 'Estudante não encontrado com este hash.' });
+    }
+
+    const entregaDeletada = await Entrega.findOneAndDelete({ estudanteId: estudante._id, tarefaId });
 
     if (!entregaDeletada) {
       return res.status(404).json({ erro: 'Nenhuma entrega encontrada para remover.' });
     }
 
-    return res.json({ mensagem: 'Entrega removida com sucesso. Você pode fazer um novo envio quando quiser!' });
+    return res.json({ mensagem: 'Entrega removida com sucesso. Você pode enviar novamente!' });
 
   } catch (error) {
     console.error('Erro ao excluir entrega do aluno:', error);
