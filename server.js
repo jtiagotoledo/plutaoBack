@@ -11,20 +11,19 @@ const limiter = rateLimit({
   message: { erro: 'Muitas requisições vindas deste IP. Tente novamente em alguns minutos.' }
 });
 
-app.use(cors({
-  origin: ['https://plutaofisica.dpdns.org', 'http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'x-admin-key']
-}));
-
 const estudanteRoutes = require('./routes/estudanteRoutes');
 const professorRoutes = require('./routes/professorRoutes');
 
 const app = express();
 const PORT = process.env.PORT||3005;
 
+app.use(cors({
+    origin: ['https://plutaofisica.dpdns.org', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'x-admin-key']
+}));
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(cors());
 app.use(express.json());
 app.use('/api/', limiter);
 
