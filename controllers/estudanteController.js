@@ -94,3 +94,54 @@ exports.uploadFoto = (req, res) => {
     return res.status(500).json({ erro: 'Erro interno ao salvar foto.' })
   }
 }
+
+exports.atualizarEntrega = async (req, res) => {
+  try {
+    const { estudanteId, tarefaId, conteudo } = req.body;
+
+    if (!estudanteId || !tarefaId || !conteudo) {
+      return res.status(400).json({ erro: 'estudanteId, tarefaId e conteudo são obrigatórios.' });
+    }
+
+    const entrega = await Entrega.findOneAndUpdate(
+      { estudanteId, tarefaId },
+      { conteudo },
+      { new: true } 
+    );
+
+    if (!entrega) {
+      return res.status(404).json({ erro: 'Nenhuma entrega encontrada para atualizar.' });
+    }
+
+    return res.json({
+      mensagem: 'Entrega atualizada com sucesso!',
+      entrega
+    });
+
+  } catch (error) {
+    console.error('Erro ao atualizar entrega do aluno:', error);
+    return res.status(500).json({ erro: 'Erro ao atualizar entrega.' });
+  }
+};
+
+exports.excluirEntrega = async (req, res) => {
+  try {
+    const { estudanteId, tarefaId } = req.body;
+
+    if (!estudanteId || !tarefaId) {
+      return res.status(400).json({ erro: 'estudanteId e tarefaId são obrigatórios.' });
+    }
+
+    const entregaDeletada = await Entrega.findOneAndDelete({ estudanteId, tarefaId });
+
+    if (!entregaDeletada) {
+      return res.status(404).json({ erro: 'Nenhuma entrega encontrada para remover.' });
+    }
+
+    return res.json({ mensagem: 'Entrega removida com sucesso. Você pode fazer um novo envio quando quiser!' });
+
+  } catch (error) {
+    console.error('Erro ao excluir entrega do aluno:', error);
+    return res.status(500).json({ erro: 'Erro ao remover entrega.' });
+  }
+};
