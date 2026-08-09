@@ -27,6 +27,7 @@ exports.obterPainelEstudante = async (req, res) => {
         tarefaId: tarefa._id,
         titulo: tarefa.titulo,
         classe: tarefa.classe,
+        pdfUrl: tarefa.pdfUrl,
         dataCriacao: tarefa.createdAt,
         entregue: !!entrega,
         conteudo: entrega ? entrega.conteudo : null,

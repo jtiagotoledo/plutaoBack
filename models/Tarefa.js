@@ -9,6 +9,10 @@ const tarefaSchema = new mongoose.Schema({
         type: String,
         required: true,
         index: true
+    },
+    pdfUrl: {
+        type: String,
+        default: null
     }
 }, { timestamps: true });
 
