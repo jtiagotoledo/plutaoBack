@@ -1,6 +1,12 @@
+const crypto = require('crypto');
+
 const Entrega = require('../models/Entrega');
 const Estudante = require('../models/Estudante');
 const Tarefa = require('../models/Tarefa');
+
+const gerarHashUnico = () => {
+  return crypto.randomBytes(2).toString('hex').toUpperCase();
+};
 
 exports.uploadPdf = (req, res) => {
   try {
@@ -88,32 +94,38 @@ exports.excluirTarefa = async (req, res) => {
 
 exports.cadastrarEstudantes = async (req, res) => {
   try {
-    const estudantes = req.body; 
+    let estudantes = req.body;
 
     if (Array.isArray(estudantes)) {
-      const novos = await Estudante.insertMany(
-        estudantes.map(e => ({ ...e, classe: e.classe.toUpperCase() }))
-      );
+      const listaComHash = estudantes.map(e => ({
+        ...e,
+        hash: e.hash ? e.hash.trim().toUpperCase() : gerarHashUnico(),
+        classe: e.classe.trim().toUpperCase()
+      }));
+
+      const novos = await Estudante.insertMany(listaComHash);
       return res.status(201).json({ mensagem: `${novos.length} estudantes cadastrados!`, estudantes: novos });
     }
 
-    const { hash, nome, classe, numero } = estudantes;
-    if (!hash || !nome || !classe || !numero) {
-      return res.status(400).json({ erro: 'Campos hash, nome, classe e numero são obrigatórios.' });
+    const { nome, classe, numero, hash } = estudantes;
+
+    if (!nome || !classe || !numero) {
+      return res.status(400).json({ erro: 'Campos nome, classe e numero são obrigatórios.' });
     }
 
     const novoEstudante = await Estudante.create({
-      hash: hash.trim().toUpperCase(),
+      hash: hash ? hash.trim().toUpperCase() : gerarHashUnico(),
       nome,
       classe: classe.trim().toUpperCase(),
       numero
     });
 
     return res.status(201).json({ mensagem: 'Estudante cadastrado com sucesso!', estudante: novoEstudante });
+
   } catch (error) {
     console.error('Erro ao cadastrar estudante:', error);
     if (error.code === 11000) {
-      return res.status(400).json({ erro: 'Já existe um estudante cadastrado com esse hash ou número.' });
+      return res.status(400).json({ erro: 'Já existe um estudante cadastrado com esse hash ou número na turma.' });
     }
     return res.status(500).json({ erro: 'Erro ao cadastrar estudante.' });
   }
