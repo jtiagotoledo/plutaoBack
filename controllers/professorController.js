@@ -45,6 +45,80 @@ exports.criarTarefa = async (req, res) => {
   }
 };
 
+exports.atualizarTarefa = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { titulo, classe, pdfUrl } = req.body;
+
+    const tarefa = await Tarefa.findById(id);
+    if (!tarefa) {
+      return res.status(404).json({ erro: 'Tarefa não encontrada.' });
+    }
+
+    if (titulo) tarefa.titulo = titulo;
+    if (classe) tarefa.classe = classe.trim().toUpperCase();
+    if (pdfUrl !== undefined) tarefa.pdfUrl = pdfUrl;
+
+    await tarefa.save();
+
+    return res.json({ mensagem: 'Tarefa atualizada com sucesso!', tarefa });
+  } catch (error) {
+    console.error('Erro ao atualizar tarefa:', error);
+    return res.status(500).json({ erro: 'Erro ao atualizar a tarefa.' });
+  }
+};
+
+exports.excluirTarefa = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const tarefa = await Tarefa.findByIdAndDelete(id);
+    if (!tarefa) {
+      return res.status(404).json({ erro: 'Tarefa não encontrada.' });
+    }
+
+    await Entrega.deleteMany({ tarefaId: id });
+
+    return res.json({ mensagem: 'Tarefa e suas entregas foram removidas com sucesso.' });
+  } catch (error) {
+    console.error('Erro ao excluir tarefa:', error);
+    return res.status(500).json({ erro: 'Erro ao excluir a tarefa.' });
+  }
+};
+
+exports.cadastrarEstudantes = async (req, res) => {
+  try {
+    const estudantes = req.body; 
+
+    if (Array.isArray(estudantes)) {
+      const novos = await Estudante.insertMany(
+        estudantes.map(e => ({ ...e, classe: e.classe.toUpperCase() }))
+      );
+      return res.status(201).json({ mensagem: `${novos.length} estudantes cadastrados!`, estudantes: novos });
+    }
+
+    const { hash, nome, classe, numero } = estudantes;
+    if (!hash || !nome || !classe || !numero) {
+      return res.status(400).json({ erro: 'Campos hash, nome, classe e numero são obrigatórios.' });
+    }
+
+    const novoEstudante = await Estudante.create({
+      hash: hash.trim().toUpperCase(),
+      nome,
+      classe: classe.trim().toUpperCase(),
+      numero
+    });
+
+    return res.status(201).json({ mensagem: 'Estudante cadastrado com sucesso!', estudante: novoEstudante });
+  } catch (error) {
+    console.error('Erro ao cadastrar estudante:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({ erro: 'Já existe um estudante cadastrado com esse hash ou número.' });
+    }
+    return res.status(500).json({ erro: 'Erro ao cadastrar estudante.' });
+  }
+};
+
 exports.listarEntregasPorTurma = async (req, res) => {
   try {
     const { classe } = req.query;
