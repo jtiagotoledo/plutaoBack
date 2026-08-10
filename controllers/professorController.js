@@ -145,6 +145,20 @@ exports.cadastrarEstudantes = async (req, res) => {
   }
 };
 
+exports.listarEstudantes = async (req, res) => {
+  try {
+    const { classe } = req.query; 
+    
+    const filtro = classe ? { classe: classe.toUpperCase() } : {};
+
+    const estudantes = await Estudante.find(filtro).sort({ numero: 1 });
+    res.status(200).json(estudantes);
+  } catch (error) {
+    console.error("Erro ao listar estudantes:", error);
+    res.status(500).json({ message: "Erro ao buscar estudantes do servidor" });
+  }
+};
+
 exports.listarEntregasPorTurma = async (req, res) => {
   try {
     const { classe } = req.query;

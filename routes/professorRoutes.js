@@ -12,6 +12,7 @@ router.get('/tarefas', authAdmin, professorController.listarTarefas);
 router.put('/tarefas/:id', professorController.atualizarTarefa);
 router.delete('/tarefas/:id', professorController.excluirTarefa);
 router.post('/estudantes', professorController.cadastrarEstudantes);
+router.get('/estudantes', authAdmin, professorController.listarEstudantes);
 router.get('/entregas', professorController.listarEntregasPorTurma);
 
 module.exports = router;
