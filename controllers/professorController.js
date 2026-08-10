@@ -159,6 +159,49 @@ exports.listarEstudantes = async (req, res) => {
   }
 };
 
+exports.atualizarEstudante = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nome, classe, numero } = req.body;
+
+    const estudanteAtualizado = await Estudante.findByIdAndUpdate(
+      id,
+      { 
+        ...(nome && { nome: nome.trim() }),
+        ...(classe && { classe: classe.trim().toUpperCase() }),
+        ...(numero && { numero: Number(numero) })
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!estudanteAtualizado) {
+      return res.status(404).json({ message: "Estudante não encontrado." });
+    }
+
+    res.status(200).json(estudanteAtualizado);
+  } catch (error) {
+    console.error("Erro ao atualizar estudante:", error);
+    res.status(500).json({ message: "Erro interno ao atualizar estudante." });
+  }
+};
+
+exports.deletarEstudante = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const estudanteDeletado = await Estudante.findByIdAndDelete(id);
+
+    if (!estudanteDeletado) {
+      return res.status(404).json({ message: "Estudante não encontrado." });
+    }
+
+    res.status(200).json({ message: "Estudante removido com sucesso." });
+  } catch (error) {
+    console.error("Erro ao deletar estudante:", error);
+    res.status(500).json({ message: "Erro interno ao deletar estudante." });
+  }
+};
+
 exports.listarEntregasPorTurma = async (req, res) => {
   try {
     const { classe } = req.query;
