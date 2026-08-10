@@ -8,6 +8,7 @@ router.use(authAdmin);
 
 router.post('/upload-pdf', uploadSinglePdf, professorController.uploadPdf);
 router.post('/tarefas', professorController.criarTarefa);
+router.get('/tarefas', authAdmin, professorController.listarTarefas);
 router.put('/tarefas/:id', professorController.atualizarTarefa);
 router.delete('/tarefas/:id', professorController.excluirTarefa);
 router.post('/estudantes', professorController.cadastrarEstudantes);

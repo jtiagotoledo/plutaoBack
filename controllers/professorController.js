@@ -55,6 +55,16 @@ exports.criarTarefa = async (req, res) => {
   }
 };
 
+exports.listarTarefas = async (req, res) => {
+  try {
+    const tarefas = await Tarefa.find().sort({ createdAt: -1 });
+    res.status(200).json(tarefas);
+  } catch (error) {
+    console.error("Erro ao listar tarefas:", error);
+    res.status(500).json({ message: "Erro ao buscar tarefas do servidor" });
+  }
+};
+
 exports.atualizarTarefa = async (req, res) => {
   try {
     const { id } = req.params;
