@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const estudanteController = require('../controllers/estudanteController');
+const uploadFotosMiddleware = require('../middlewares/upload');
 
 router.post('/login', estudanteController.obterPainelEstudante);
 router.post('/entregas', uploadFotosMiddleware, estudanteController.enviarTarefa);

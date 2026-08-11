@@ -59,4 +59,4 @@ const uploadFotos = (req, res, next) => {
   });
 };
 
-module.exports = uploadSingleFoto;
+module.exports = uploadFotos;
