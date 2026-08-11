@@ -19,8 +19,8 @@ const PORT = process.env.PORT||3005;
 
 app.use(cors({
     origin: ['https://plutaofisica.dpdns.org', 'http://localhost:3000'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'x-admin-key']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'x-admin-key', 'x-student-hash']
 }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
