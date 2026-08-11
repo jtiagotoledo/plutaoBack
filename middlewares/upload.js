@@ -37,18 +37,21 @@ const upload = multer({
   }
 });
 
-const uploadSingleFoto = (req, res, next) => {
-  upload.single('foto')(req, res, (err) => {
+const uploadFotos = (req, res, next) => {
+  upload.array('fotos', 2)(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ erro: 'O arquivo excede o limite máximo permitido de 200 KB.' });
+        return res.status(400).json({ erro: 'Cada foto excede o limite máximo permitido de 200 KB.' });
+      }
+      if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+        return res.status(400).json({ erro: 'Você pode enviar no máximo 2 fotos.' });
       }
       return res.status(400).json({ erro: err.message });
     } else if (err) {
       return res.status(400).json({ erro: err.message });
     }
 
-    if (!req.file) {
+    if (!req.files || req.files.length === 0) {
       return res.status(400).json({ erro: 'Nenhum arquivo enviado.' });
     }
 

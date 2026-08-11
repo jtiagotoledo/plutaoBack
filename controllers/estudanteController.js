@@ -53,10 +53,14 @@ exports.obterPainelEstudante = async (req, res) => {
 
 exports.enviarTarefa = async (req, res) => {
   try {
-    const { hash, tarefaId, conteudo } = req.body;
+    const { hash, tarefaId } = req.body;
 
-    if (!hash || !tarefaId || !conteudo) {
-      return res.status(400).json({ erro: 'Hash, tarefaId e conteúdo são obrigatórios.' });
+    if (!hash || !tarefaId) {
+      return res.status(400).json({ erro: 'Hash e tarefaId são obrigatórios.' });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ erro: 'Selecione ao menos 1 foto para enviar.' });
     }
 
     const estudante = await Estudante.findOne({ hash: hash.trim().toUpperCase() });
@@ -64,36 +68,25 @@ exports.enviarTarefa = async (req, res) => {
       return res.status(404).json({ erro: 'Estudante não encontrado.' });
     }
 
+    const urlsFotos = req.files.map(
+      file => `${req.protocol}://${req.get('host')}/uploads/${file.filename}`
+    );
+
     const entrega = await Entrega.findOneAndUpdate(
       { estudanteId: estudante._id, tarefaId: tarefaId },
-      { conteudo: conteudo },
+      { conteudo: urlsFotos }, 
       { new: true, upsert: true }
     );
 
     return res.json({
       mensagem: 'Tarefa entregue com sucesso!',
-      entrega
+      entrega,
     });
-
   } catch (error) {
     console.error('Erro ao enviar tarefa:', error);
     return res.status(500).json({ erro: 'Erro ao salvar a entrega.' });
   }
 };
-
-exports.uploadFoto = (req, res) => {
-  try {
-    const urlArquivo = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-
-    return res.json({
-      mensagem: 'Upload realizado com sucesso!',
-      url: urlArquivo
-    });
-  } catch (error) {
-    console.error('Erro ao processar URL da imagem:', error);
-    return res.status(500).json({ erro: 'Erro interno ao salvar foto.' })
-  }
-}
 
 exports.atualizarEntrega = async (req, res) => {
   try {

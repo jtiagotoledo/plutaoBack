@@ -12,7 +12,7 @@ const entregaSchema = new mongoose.Schema({
         required: true,
     },
     conteudo: {
-        type: String,
+        type: [String],
         required: true,
     }
 }, { timestamps: true });
