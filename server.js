@@ -27,7 +27,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json());
 app.use('/api/', limiter);
 
-app.use('/api/estudantes', estudanteRoutes);
+app.use('/api/estudante', estudanteRoutes);
 app.use('/api/professor', professorRoutes);
 
 app.get('/api/health',(req,res)=>{
