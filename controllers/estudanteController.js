@@ -17,7 +17,7 @@ exports.obterPainelEstudante = async (req, res) => {
 
     const tarefas = await Tarefa.find({
       classe: { $in: [estudante.classe, 'TODAS'] }
-    }).sort({ createdAt: 1 });
+    }).sort({ createdAt: -1 });
 
     const entregas = await Entrega.find({ estudanteId: estudante._id });
 
