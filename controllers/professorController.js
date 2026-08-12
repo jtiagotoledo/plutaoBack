@@ -8,6 +8,10 @@ const gerarHashUnico = () => {
   return crypto.randomBytes(2).toString('hex').toUpperCase();
 };
 
+// ==========================================
+// GERENCIAMENTO DE TAREFAS
+// ==========================================
+
 exports.uploadPdf = (req, res) => {
   try {
     if (!req.file) {
@@ -18,7 +22,7 @@ exports.uploadPdf = (req, res) => {
 
     return res.json({
       mensagem: 'Upload do PDF realizado com sucesso!',
-      pdfUrl: urlPdf
+      pdfUrl: urlPdf,
     });
   } catch (error) {
     console.error('Erro no upload de PDF:', error);
@@ -36,32 +40,38 @@ exports.criarTarefa = async (req, res) => {
 
     const turmasArray = Array.isArray(classe) ? classe : [classe];
 
-    const tarefasParaInserir = turmasArray.map(turma => ({
+    const tarefasParaInserir = turmasArray.map((turma) => ({
       titulo,
       classe: turma.trim().toUpperCase(),
-      pdfUrl: pdfUrl || null
+      pdfUrl: pdfUrl || null,
     }));
 
     const tarefasCriadas = await Tarefa.insertMany(tarefasParaInserir);
 
     return res.status(201).json({
       mensagem: `Tarefa cadastrada com sucesso para ${tarefasCriadas.length} turma(s)!`,
-      tarefas: tarefasCriadas
+      tarefas: tarefasCriadas,
     });
-
   } catch (error) {
     console.error('Erro ao criar tarefa(s):', error);
     return res.status(500).json({ erro: 'Erro ao cadastrar a tarefa.' });
   }
 };
 
+// CORRIGIDO: Agora filtra as tarefas de acordo com a query ?classe=XX
 exports.listarTarefas = async (req, res) => {
   try {
-    const tarefas = await Tarefa.find().sort({ createdAt: -1 });
-    res.status(200).json(tarefas);
+    const { classe } = req.query;
+
+    const filtro = classe
+      ? { classe: { $in: [classe.trim().toUpperCase(), 'TODAS'] } }
+      : {};
+
+    const tarefas = await Tarefa.find(filtro).sort({ createdAt: -1 });
+    return res.status(200).json(tarefas);
   } catch (error) {
-    console.error("Erro ao listar tarefas:", error);
-    res.status(500).json({ message: "Erro ao buscar tarefas do servidor" });
+    console.error('Erro ao listar tarefas:', error);
+    return res.status(500).json({ erro: 'Erro ao buscar tarefas do servidor.' });
   }
 };
 
@@ -106,15 +116,19 @@ exports.excluirTarefa = async (req, res) => {
   }
 };
 
+// ==========================================
+// GERENCIAMENTO DE ESTUDANTES
+// ==========================================
+
 exports.cadastrarEstudantes = async (req, res) => {
   try {
     let estudantes = req.body;
 
     if (Array.isArray(estudantes)) {
-      const listaComHash = estudantes.map(e => ({
+      const listaComHash = estudantes.map((e) => ({
         ...e,
         hash: e.hash ? e.hash.trim().toUpperCase() : gerarHashUnico(),
-        classe: e.classe.trim().toUpperCase()
+        classe: e.classe.trim().toUpperCase(),
       }));
 
       const novos = await Estudante.insertMany(listaComHash);
@@ -131,11 +145,10 @@ exports.cadastrarEstudantes = async (req, res) => {
       hash: hash ? hash.trim().toUpperCase() : gerarHashUnico(),
       nome,
       classe: classe.trim().toUpperCase(),
-      numero
+      numero,
     });
 
     return res.status(201).json({ mensagem: 'Estudante cadastrado com sucesso!', estudante: novoEstudante });
-
   } catch (error) {
     console.error('Erro ao cadastrar estudante:', error);
     if (error.code === 11000) {
@@ -147,15 +160,15 @@ exports.cadastrarEstudantes = async (req, res) => {
 
 exports.listarEstudantes = async (req, res) => {
   try {
-    const { classe } = req.query; 
-    
-    const filtro = classe ? { classe: classe.toUpperCase() } : {};
+    const { classe } = req.query;
+
+    const filtro = classe ? { classe: classe.trim().toUpperCase() } : {};
 
     const estudantes = await Estudante.find(filtro).sort({ numero: 1 });
-    res.status(200).json(estudantes);
+    return res.status(200).json(estudantes);
   } catch (error) {
-    console.error("Erro ao listar estudantes:", error);
-    res.status(500).json({ message: "Erro ao buscar estudantes do servidor" });
+    console.error('Erro ao listar estudantes:', error);
+    return res.status(500).json({ erro: 'Erro ao buscar estudantes do servidor.' });
   }
 };
 
@@ -166,22 +179,22 @@ exports.atualizarEstudante = async (req, res) => {
 
     const estudanteAtualizado = await Estudante.findByIdAndUpdate(
       id,
-      { 
+      {
         ...(nome && { nome: nome.trim() }),
         ...(classe && { classe: classe.trim().toUpperCase() }),
-        ...(numero && { numero: Number(numero) })
+        ...(numero && { numero: Number(numero) }),
       },
       { new: true, runValidators: true }
     );
 
     if (!estudanteAtualizado) {
-      return res.status(404).json({ message: "Estudante não encontrado." });
+      return res.status(404).json({ erro: 'Estudante não encontrado.' });
     }
 
-    res.status(200).json(estudanteAtualizado);
+    return res.status(200).json(estudanteAtualizado);
   } catch (error) {
-    console.error("Erro ao atualizar estudante:", error);
-    res.status(500).json({ message: "Erro interno ao atualizar estudante." });
+    console.error('Erro ao atualizar estudante:', error);
+    return res.status(500).json({ erro: 'Erro interno ao atualizar estudante.' });
   }
 };
 
@@ -192,16 +205,43 @@ exports.deletarEstudante = async (req, res) => {
     const estudanteDeletado = await Estudante.findByIdAndDelete(id);
 
     if (!estudanteDeletado) {
-      return res.status(404).json({ message: "Estudante não encontrado." });
+      return res.status(404).json({ erro: 'Estudante não encontrado.' });
     }
 
-    res.status(200).json({ message: "Estudante removido com sucesso." });
+    return res.status(200).json({ mensagem: 'Estudante removido com sucesso.' });
   } catch (error) {
-    console.error("Erro ao deletar estudante:", error);
-    res.status(500).json({ message: "Erro interno ao deletar estudante." });
+    console.error('Erro ao deletar estudante:', error);
+    return res.status(500).json({ erro: 'Erro interno ao deletar estudante.' });
   }
 };
 
+// ==========================================
+// GERENCIAMENTO DE ENTREGAS
+// ==========================================
+
+// NOVO: Retorna as entregas diretas em formato Array para a Matriz do Front-end
+exports.listarEntregas = async (req, res) => {
+  try {
+    const { classe } = req.query;
+
+    if (!classe) {
+      const entregas = await Entrega.find();
+      return res.status(200).json(entregas);
+    }
+
+    const turma = classe.trim().toUpperCase();
+    const estudantes = await Estudante.find({ classe: turma });
+    const estudanteIds = estudantes.map((e) => e._id);
+
+    const entregas = await Entrega.find({ estudanteId: { $in: estudanteIds } });
+    return res.status(200).json(entregas);
+  } catch (error) {
+    console.error('Erro ao listar entregas:', error);
+    return res.status(500).json({ erro: 'Erro ao buscar entregas.' });
+  }
+};
+
+// Gera o relatório agregando estudantes, tarefas e entregas
 exports.listarEntregasPorTurma = async (req, res) => {
   try {
     const { classe } = req.query;
@@ -213,25 +253,25 @@ exports.listarEntregasPorTurma = async (req, res) => {
     const turma = classe.trim().toUpperCase();
 
     const estudantes = await Estudante.find({ classe: turma }).sort({ numero: 1, nome: 1 });
-
     const tarefas = await Tarefa.find({ classe: { $in: [turma, 'TODAS'] } }).sort({ createdAt: 1 });
 
-    const estudanteIds = estudantes.map(e => e._id);
+    const estudanteIds = estudantes.map((e) => e._id);
     const entregas = await Entrega.find({ estudanteId: { $in: estudanteIds } });
 
-    const alunosRelatorio = estudantes.map(aluno => {
+    const alunosRelatorio = estudantes.map((aluno) => {
       const tarefasMap = {};
 
-      tarefas.forEach(tarefa => {
+      tarefas.forEach((tarefa) => {
         const entrega = entregas.find(
-          e => e.estudanteId.toString() === aluno._id.toString() && 
-               e.tarefaId.toString() === tarefa._id.toString()
+          (e) =>
+            e.estudanteId.toString() === aluno._id.toString() &&
+            e.tarefaId.toString() === tarefa._id.toString()
         );
 
         tarefasMap[tarefa._id] = {
           entregue: !!entrega,
           conteudo: entrega ? entrega.conteudo : null,
-          dataEntrega: entrega ? entrega.updatedAt : null
+          dataEntrega: entrega ? entrega.updatedAt : null,
         };
       });
 
@@ -239,20 +279,19 @@ exports.listarEntregasPorTurma = async (req, res) => {
         estudanteId: aluno._id,
         numero: aluno.numero,
         nome: aluno.nome,
-        entregas: tarefasMap 
+        entregas: tarefasMap,
       };
     });
 
     return res.json({
       classe: turma,
-      colunasTarefas: tarefas.map(t => ({
+      colunasTarefas: tarefas.map((t) => ({
         id: t._id,
         titulo: t.titulo,
-        dataCriacao: t.createdAt
+        dataCriacao: t.createdAt,
       })),
-      alunos: alunosRelatorio
+      alunos: alunosRelatorio,
     });
-
   } catch (error) {
     console.error('Erro ao gerar matriz de entregas:', error);
     return res.status(500).json({ erro: 'Erro ao gerar relatório.' });
