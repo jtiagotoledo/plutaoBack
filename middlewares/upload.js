@@ -25,14 +25,16 @@ const upload = multer({
   },
   fileFilter: (req, file, cb) => {
     const extensoesAceitas = /jpeg|jpg|png|webp/;
-    const mimeAceitos = /jpeg|jpg|png|webp|pjpeg|x-png/;
+    const mimeAceitos = /image\/(jpeg|jpg|png|webp|pjpeg|x-png)/;
 
-    const extValida = extensoesAceitas.test(path.extname(file.originalname).toLowerCase());
+    const extName = path.extname(file.originalname).toLowerCase();
+    const extValida = extensoesAceitas.test(extName);
     const mimeValido = mimeAceitos.test(file.mimetype.toLowerCase());
 
-    if (extValida && mimeValido) {
+    if (mimeValido || (extValida && mimeValido)) {
       return cb(null, true);
     }
+
     cb(new Error('Formato de imagem não suportado. Envie em JPG, PNG ou WebP.'));
   }
 });
